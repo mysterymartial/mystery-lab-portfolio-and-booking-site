@@ -46,17 +46,16 @@ export default function Services() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Tech Services */}
-          <div className="bg-slate-900/50 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-primary-vibrant/40 hover:shadow-xl hover:shadow-primary-vibrant/10 hover:-translate-y-1 transition-all duration-300 shadow-sm">
+          <div className="bg-slate-900/60 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-primary-vibrant/40 hover:shadow-xl hover:shadow-primary-vibrant/10 hover:-translate-y-0.5 transition-all duration-300 shadow-lg">
             <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">💻</div>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Technology</h3>
-            <ul className="space-y-2 sm:space-y-3">
+            <div className="flex flex-wrap gap-2">
               {techServices.map((service, index) => (
-                <li key={index} className="flex items-start text-gray-300 text-sm sm:text-base">
-                  <span className="text-primary-vibrant mr-2 flex-shrink-0">•</span>
-                  <span>{service}</span>
-                </li>
+                <span key={index} className="px-3 py-1.5 bg-slate-800/80 text-slate-300 rounded-lg text-xs sm:text-sm font-medium border border-slate-700/50 hover:border-primary-vibrant/30 hover:text-primary-vibrant transition-colors">
+                  {service}
+                </span>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Music Services */}
