@@ -6,7 +6,7 @@ export default function Projects() {
       title: 'GigWave',
       description: 'A music gig marketplace platform connecting musicians with event organizers. Book live performances, studio sessions, and entertainment for any occasion.',
       link: 'https://gigwave-66jg-git-dev-agbaosi-bolarinwa-mysterys-projects.vercel.app/',
-      tech: ['Next.js', 'TypeScript', 'Firebase'],
+      tech: ['Next.js', 'Golang', 'Java'],
       icon: '🎵',
       gradient: 'from-blue-600 to-cyan-500',
       accent: 'violet',
@@ -15,7 +15,7 @@ export default function Projects() {
       title: 'Purity Family Services',
       description: 'Premium home care platform delivering compassionate, licensed care. Companion care, personal care, medication management, and specialized support for families.',
       link: 'https://www.purityfamilyservice.com/',
-      tech: ['Next.js', 'TypeScript', 'Healthcare'],
+      tech: ['Next.js', 'TypeScript', 'Firebase', 'Healthcare'],
       icon: '🏥',
       gradient: 'from-teal-600 to-cyan-500',
       accent: 'teal',
@@ -24,7 +24,7 @@ export default function Projects() {
       title: 'Semicolon Biometrics',
       description: 'IoT biometric attendance system with hardware device and cloud server. Real-time fingerprint recognition for workforce management and access control.',
       link: 'https://semicolon-biometrics.vercel.app',
-      tech: ['Next.js', 'IoT', 'Biometrics', 'Hardware'],
+      tech: ['Next.js', 'Java', 'Embedded C', 'ESP32', 'Biometrics'],
       icon: '🔐',
       gradient: 'from-amber-600 to-orange-500',
       accent: 'amber',
@@ -75,6 +75,7 @@ export default function Projects() {
                       <span
                         key={techIndex}
                         className="px-3 py-1.5 bg-slate-800/80 text-slate-300 rounded-lg text-xs font-medium border border-slate-700/50"
+                        suppressHydrationWarning
                       >
                         {tech}
                       </span>

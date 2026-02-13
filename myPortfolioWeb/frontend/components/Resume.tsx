@@ -13,7 +13,7 @@ export default function Resume() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-700/50 mb-6 sm:mb-8 shadow-sm">
+          <div className="bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-700/50 mb-6 sm:mb-8 shadow-lg hover:border-primary-vibrant/30 transition-colors">
             <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Professional Summary</h3>
             
             <div className="space-y-4 sm:space-y-5 md:space-y-6 text-gray-300">

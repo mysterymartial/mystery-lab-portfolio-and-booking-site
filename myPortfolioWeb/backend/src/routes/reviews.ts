@@ -18,8 +18,7 @@ router.get('/approved', asyncHandler(async (req: Request, res: Response) => {
     .lean()
     .exec();
   
-  // Cache for 5 minutes (reviews don't change frequently)
-  res.set('Cache-Control', 'public, max-age=300');
+  res.set('Cache-Control', 'no-store, must-revalidate');
   res.json(reviews);
 }));
 
@@ -111,6 +110,18 @@ router.put('/:id/reject', authenticateAdmin, asyncHandler(async (req: Request, r
   }
 
   res.json(review);
+}));
+
+// Delete a review (admin only)
+router.delete('/:id', authenticateAdmin, asyncHandler(async (req: Request, res: Response) => {
+  const review = await Review.findByIdAndDelete(req.params.id);
+
+  if (!review) {
+    res.status(404).json({ error: 'Review not found' });
+    return;
+  }
+
+  res.json({ message: 'Review deleted successfully' });
 }));
 
 export default router;

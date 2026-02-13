@@ -30,16 +30,18 @@ export default function AdminChat() {
 
   const handleSoftDelete = async (messageId: string) => {
     if (confirm('Are you sure you want to delete this chat?')) {
+      // Optimistic update: remove from UI immediately
+      setMessages((prev) => prev.filter((m) => m._id !== messageId))
+      if (selectedMessage?._id === messageId) {
+        setSelectedMessage(null)
+      }
       try {
         const token = await getIdToken()
         await api.deleteMessage(messageId, token)
-        loadMessages()
-        if (selectedMessage?._id === messageId) {
-          setSelectedMessage(null)
-        }
       } catch (error) {
         console.error('Error deleting message:', error)
-        alert('Failed to delete message')
+        loadMessages()
+        alert(error instanceof Error ? error.message : 'Failed to delete message')
       }
     }
   }
@@ -55,7 +57,7 @@ export default function AdminChat() {
       alert('Reply sent successfully!')
     } catch (error) {
       console.error('Error sending reply:', error)
-      alert('Failed to send reply')
+      alert(error instanceof Error ? error.message : 'Failed to send reply')
     }
   }
 
@@ -65,12 +67,30 @@ export default function AdminChat() {
     try {
       const token = await getIdToken()
       await api.setGoogleMeetLink(selectedMessage._id, googleMeetLink, token)
-      alert('Google Meet link saved!')
       setGoogleMeetLink('')
       loadMessages()
+      alert('Google Meet link saved!')
     } catch (error) {
       console.error('Error setting Google Meet link:', error)
-      alert('Failed to save Google Meet link')
+      alert(error instanceof Error ? error.message : 'Failed to save Google Meet link')
+    }
+  }
+
+  const handleSetAndSendGoogleMeet = async () => {
+    if (!selectedMessage || !googleMeetLink.trim() || !user) return
+
+    const link = googleMeetLink.trim()
+    try {
+      const token = await getIdToken()
+      await api.setGoogleMeetLink(selectedMessage._id, link, token)
+      const message = `Here is your Google Meet link: ${link}`
+      await api.replyToMessage(selectedMessage._id, message, token)
+      setGoogleMeetLink('')
+      loadMessages()
+      alert('Google Meet link saved and sent to the visitor via email and website chat!')
+    } catch (error) {
+      console.error('Error setting/sending Google Meet link:', error)
+      alert(error instanceof Error ? error.message : 'Failed to save or send Google Meet link')
     }
   }
 
@@ -155,22 +175,42 @@ export default function AdminChat() {
 
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-gray-300 mb-2 text-sm sm:text-base">Set Google Meet Link</label>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <label className="block text-gray-300 text-sm sm:text-base">Set Google Meet Link</label>
+                <a
+                  href="https://meet.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-vibrant hover:underline text-xs sm:text-sm font-medium"
+                >
+                  Create new meeting
+                </a>
+                <span className="text-gray-500 text-xs">(opens Google Meet; sign in, start meeting, copy link, paste below)</span>
+              </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="url"
                   value={googleMeetLink}
                   onChange={(e) => setGoogleMeetLink(e.target.value)}
-                  placeholder="https://meet.google.com/..."
+                  placeholder="https://meet.google.com/abc-defg-hij"
                   className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant"
                 />
-                <button
-                  onClick={handleSetGoogleMeet}
-                  className="px-3 py-2 sm:px-4 sm:py-2 bg-primary-vibrant text-white rounded-lg text-sm sm:text-base hover:bg-blue-600 whitespace-nowrap"
-                >
-                  Set
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSetGoogleMeet}
+                    className="px-3 py-2 sm:px-4 sm:py-2 bg-slate-600 text-white rounded-lg text-sm sm:text-base hover:bg-slate-500 whitespace-nowrap"
+                  >
+                    Set
+                  </button>
+                  <button
+                    onClick={handleSetAndSendGoogleMeet}
+                    className="px-3 py-2 sm:px-4 sm:py-2 bg-primary-vibrant text-white rounded-lg text-sm sm:text-base hover:bg-blue-600 whitespace-nowrap"
+                  >
+                    Set & Send
+                  </button>
+                </div>
               </div>
+              <p className="text-gray-500 text-xs mt-1">Set & Send saves the link, emails it, and shows it in the website chat.</p>
             </div>
 
             <div>

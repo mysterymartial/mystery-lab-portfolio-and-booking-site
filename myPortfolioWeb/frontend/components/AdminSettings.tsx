@@ -49,7 +49,7 @@ export default function AdminSettings() {
       alert('Settings saved successfully!')
     } catch (error) {
       console.error('Error saving settings:', error)
-      alert('Failed to save settings')
+      alert(error instanceof Error ? error.message : 'Failed to save settings')
     }
   }
 

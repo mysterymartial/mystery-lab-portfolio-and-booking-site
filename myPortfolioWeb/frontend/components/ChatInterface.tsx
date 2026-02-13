@@ -1,32 +1,54 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { api, Message } from '@/lib/api'
+import { formatDate } from '@/lib/formatDate'
+
+const CHAT_EMAIL_KEY = 'chatVisitorEmail'
+
+function linkify(text: string) {
+  const parts = (text || '').split(/(https?:\/\/[^\s]+)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('http')) {
+      return (
+        <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary-vibrant hover:underline break-all">
+          {part}
+        </a>
+      )
+    }
+    return part
+  })
+}
+
+const EMPTY_STATE_MESSAGE = 'Send a message to start the conversation. Your replies will appear here.'
 
 export default function ChatInterface() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [allMessages, setAllMessages] = useState<Message[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const storedEmail = mounted && typeof window !== 'undefined' ? sessionStorage.getItem(CHAT_EMAIL_KEY) : null
+  const myMessages = storedEmail
+    ? allMessages.filter((m) => !m.deleted && m.email?.toLowerCase() === storedEmail.toLowerCase())
+    : []
 
   useEffect(() => {
     loadMessages()
-    // Poll for new messages every 5 seconds
-    const interval = setInterval(loadMessages, 5000)
+    const interval = setInterval(loadMessages, 3000) // Poll every 3s so admin replies show quickly on site
     return () => clearInterval(interval)
   }, [])
 
   const loadMessages = async () => {
     try {
-      const msgs = await api.getMessages()
-      setMessages(msgs.filter((m) => !m.deleted))
-      setTimeout(() => {
-        if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
-          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-        }
-      }, 100)
+      const data = await api.getMessages()
+      setAllMessages(data)
     } catch (error) {
       console.error('Error loading messages:', error)
     }
@@ -39,11 +61,12 @@ export default function ChatInterface() {
     setSubmitting(true)
     try {
       await api.createMessage({ name, email, message })
+      sessionStorage.setItem(CHAT_EMAIL_KEY, email.toLowerCase().trim())
       setMessage('')
       loadMessages()
     } catch (error) {
       console.error('Error sending message:', error)
-      alert('Failed to send message. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -70,35 +93,55 @@ export default function ChatInterface() {
         </div>
 
         <div className="bg-gray-900/50 rounded-lg p-3 sm:p-4 h-64 sm:h-80 md:h-96 overflow-y-auto mb-3 sm:mb-4">
-          {messages.length === 0 ? (
+          {!mounted ? (
             <div className="text-center text-gray-400 py-6 sm:py-8 text-sm sm:text-base">
-              No messages yet. Start the conversation!
+              {EMPTY_STATE_MESSAGE}
+            </div>
+          ) : myMessages.length === 0 ? (
+            <div className="text-center text-gray-400 py-6 sm:py-8 text-sm sm:text-base">
+              {storedEmail ? 'No messages in your conversation yet.' : EMPTY_STATE_MESSAGE}
             </div>
           ) : (
             <div className="space-y-3 sm:space-y-4">
-              {messages.map((msg) => (
-                <div key={msg._id} className="bg-gray-800 p-3 sm:p-4 rounded-lg">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 mb-2">
-                    <div className="w-full sm:w-auto">
-                      <p className="text-white font-semibold text-sm sm:text-base">
-                        {typeof msg.name === 'string' ? msg.name : ''}
-                      </p>
-                      <p className="text-gray-400 text-xs sm:text-sm break-all">
-                        {typeof msg.email === 'string' ? msg.email : ''}
-                      </p>
-                    </div>
-                    <p className="text-gray-500 text-xs sm:text-sm whitespace-nowrap" suppressHydrationWarning>
-                      {msg.createdAt && typeof msg.createdAt === 'string'
-                        ? new Date(msg.createdAt).toLocaleString()
-                        : ''}
+              {myMessages.map((msg) => (
+                <div key={msg._id} className="space-y-2">
+                  <div className="bg-primary-vibrant/10 border border-primary-vibrant/30 p-3 sm:p-4 rounded-lg">
+                    <p className="text-gray-400 text-xs mb-1">You</p>
+                    <p className="text-white text-sm sm:text-base break-words">{typeof msg.message === 'string' ? msg.message : ''}</p>
+                    <p className="text-gray-500 text-xs mt-2" suppressHydrationWarning>
+                      {msg.createdAt ? formatDate(msg.createdAt) : ''}
                     </p>
                   </div>
-                  <p className="text-gray-300 text-sm sm:text-base break-words">
-                    {typeof msg.message === 'string' ? msg.message : ''}
-                  </p>
+                  {msg.replies && msg.replies.length > 0 && (
+                    <div className="space-y-2 pl-4 border-l-2 border-primary-vibrant/30">
+                      {msg.replies.map((reply, idx) => (
+                        <div key={idx} className="bg-slate-700/50 p-2 sm:p-3 rounded-lg">
+                          <p className="text-gray-400 text-xs mb-1">Response</p>
+                          <p className="text-gray-200 text-sm break-words">
+                            {typeof reply.message === 'string' ? linkify(reply.message) : ''}
+                          </p>
+                          <p className="text-gray-500 text-xs mt-1" suppressHydrationWarning>
+                            {reply.timestamp ? formatDate(reply.timestamp) : ''}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {msg.googleMeetLink && (
+                    <div className="bg-green-500/10 border border-green-500/30 p-3 rounded-lg">
+                      <p className="text-gray-400 text-xs mb-2">Google Meet</p>
+                      <a
+                        href={msg.googleMeetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-vibrant hover:underline text-sm sm:text-base break-all font-medium"
+                      >
+                        {msg.googleMeetLink}
+                      </a>
+                    </div>
+                  )}
                 </div>
               ))}
-              <div ref={messagesEndRef} />
             </div>
           )}
         </div>

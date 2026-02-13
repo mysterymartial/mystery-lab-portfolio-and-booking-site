@@ -28,7 +28,7 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
       if (onSuccess) onSuccess()
     } catch (error) {
       console.error('Error submitting review:', error)
-      alert('Failed to submit review. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to submit review. Please try again.')
     } finally {
       setSubmitting(false)
     }

@@ -1,5 +1,18 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+/** Extract error message from API response body - handles common formats */
+async function getErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = await response.json();
+    if (body?.error && typeof body.error === 'string') return body.error;
+    if (body?.message && typeof body.message === 'string') return body.message;
+    if (Array.isArray(body?.errors) && body.errors[0]) return String(body.errors[0]);
+  } catch {
+    // Response body wasn't JSON
+  }
+  return fallback;
+}
+
 export interface Message {
   _id: string;
   name: string;
@@ -51,7 +64,9 @@ export interface Setting {
 export const api = {
   // Messages
   getMessages: async (): Promise<Message[]> => {
-    const response = await fetch(`${API_BASE_URL}/messages`);
+    const response = await fetch(`${API_BASE_URL}/messages`, {
+      cache: 'no-store', // Always fetch fresh data so visitor sees admin replies
+    });
     if (!response.ok) throw new Error('Failed to fetch messages');
     const data = await response.json();
     // Backend returns { messages: [], pagination: {...} }
@@ -64,7 +79,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to create message');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to create message'));
+    }
     return response.json();
   },
 
@@ -93,7 +110,9 @@ export const api = {
       },
       body: JSON.stringify({ message }),
     });
-    if (!response.ok) throw new Error('Failed to send reply');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to send reply'));
+    }
     return response.json();
   },
 
@@ -106,13 +125,17 @@ export const api = {
       },
       body: JSON.stringify({ googleMeetLink }),
     });
-    if (!response.ok) throw new Error('Failed to set Google Meet link');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to set Google Meet link'));
+    }
     return response.json();
   },
 
   // Reviews
   getApprovedReviews: async (): Promise<Review[]> => {
-    const response = await fetch(`${API_BASE_URL}/reviews/approved`);
+    const response = await fetch(`${API_BASE_URL}/reviews/approved`, {
+      cache: 'no-store',
+    });
     if (!response.ok) throw new Error('Failed to fetch reviews');
     return response.json();
   },
@@ -131,7 +154,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to create review');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to create review'));
+    }
     return response.json();
   },
 
@@ -140,7 +165,9 @@ export const api = {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Failed to approve review');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to approve review'));
+    }
     return response.json();
   },
 
@@ -149,14 +176,27 @@ export const api = {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Failed to reject review');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to reject review'));
+    }
     return response.json();
+  },
+
+  deleteReview: async (id: string, token: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/reviews/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to delete review'));
+    }
   },
 
   // Bookings
   getAllBookings: async (token: string): Promise<Booking[]> => {
     const response = await fetch(`${API_BASE_URL}/bookings`, {
       headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
     if (!response.ok) throw new Error('Failed to fetch bookings');
     const data = await response.json();
@@ -179,7 +219,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Failed to create booking');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to create booking'));
+    }
     return response.json();
   },
 
@@ -192,7 +234,9 @@ export const api = {
       },
       body: JSON.stringify({ status }),
     });
-    if (!response.ok) throw new Error('Failed to update booking status');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to update booking status'));
+    }
     return response.json();
   },
 
@@ -201,7 +245,9 @@ export const api = {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Failed to archive booking');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to archive booking'));
+    }
   },
 
   // Settings
@@ -220,7 +266,9 @@ export const api = {
       },
       body: JSON.stringify({ value }),
     });
-    if (!response.ok) throw new Error('Failed to update setting');
+    if (!response.ok) {
+      throw new Error(await getErrorMessage(response, 'Failed to update setting'));
+    }
     return response.json();
   },
 };

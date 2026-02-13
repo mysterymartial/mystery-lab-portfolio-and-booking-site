@@ -17,17 +17,22 @@ function DeferredReviewForm({ onSuccess }: { onSuccess: () => void }) {
 export default function Reviews() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     loadReviews()
+    const interval = setInterval(loadReviews, 60000)
+    return () => clearInterval(interval)
   }, [])
 
   const loadReviews = async () => {
     try {
+      setLoadError(false)
       const reviewsData = await api.getApprovedReviews()
       setReviews(reviewsData)
     } catch (error) {
       console.error('Error fetching reviews:', error)
+      setLoadError(true)
     } finally {
       setLoading(false)
     }
@@ -37,12 +42,16 @@ export default function Reviews() {
     <section id="reviews" className="py-12 sm:py-16 md:py-20 bg-[#0a0e27]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 md:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">Client Reviews</h2>
-          <div className="w-16 sm:w-20 md:w-24 h-1 bg-primary-vibrant mx-auto"></div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 tracking-tight">Client Reviews</h2>
+          <div className="w-20 h-1 bg-gradient-to-r from-primary-vibrant to-cyan-500 mx-auto rounded-full"></div>
         </div>
 
         {loading ? (
           <div className="text-center text-gray-300 text-sm sm:text-base">Loading reviews...</div>
+        ) : loadError ? (
+          <div className="text-center text-amber-400 mb-6 sm:mb-8 text-sm sm:text-base px-4">
+            Unable to load reviews. Please refresh the page.
+          </div>
         ) : reviews.length === 0 ? (
           <div className="text-center text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base px-4">
             No reviews yet. Be the first to leave a review!

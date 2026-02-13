@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { api } from '@/lib/api'
 
+function getToday() {
+  return new Date().toISOString().split('T')[0]
+}
+
 export default function BookingForm() {
   const [formData, setFormData] = useState({
     name: '',
@@ -24,8 +28,12 @@ export default function BookingForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Client-side validation (HTML5 required also handles this, but this ensures test compatibility)
     if (!formData.name || !formData.email || !formData.phone || !formData.serviceType) {
+      return
+    }
+
+    if (formData.eventDate && formData.eventDate < getToday()) {
+      alert('Please select a date today or in the future.')
       return
     }
     
@@ -47,7 +55,7 @@ export default function BookingForm() {
       setTimeout(() => setSubmitted(false), 5000)
     } catch (error) {
       console.error('Error submitting booking:', error)
-      alert('Failed to submit booking. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to submit booking. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -55,7 +63,7 @@ export default function BookingForm() {
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto bg-green-500/20 border border-green-500 p-8 rounded-lg text-center">
+      <div className="max-w-2xl mx-auto bg-green-500/20 border border-green-500/60 p-8 rounded-2xl text-center shadow-lg">
         <p className="text-green-400 text-xl mb-4">
           Thank you! Your booking request has been submitted.
         </p>
@@ -67,7 +75,7 @@ export default function BookingForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-gray-800/50 rounded-lg border border-primary-blue/30 p-4 sm:p-6 md:p-8 shadow-lg">
+    <div className="max-w-2xl mx-auto bg-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4 sm:p-6 md:p-8 shadow-xl">
       <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Booking Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
         <div>
@@ -79,7 +87,7 @@ export default function BookingForm() {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
           />
         </div>
 
@@ -93,7 +101,7 @@ export default function BookingForm() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
             />
           </div>
           <div>
@@ -105,7 +113,7 @@ export default function BookingForm() {
               value={formData.phone}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
             />
           </div>
         </div>
@@ -118,7 +126,7 @@ export default function BookingForm() {
             value={formData.serviceType}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
           >
             <option value="">Select a service</option>
             <optgroup label="Technology">
@@ -164,7 +172,15 @@ export default function BookingForm() {
               name="eventDate"
               value={formData.eventDate}
               onChange={handleChange}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+              onBlur={(e) => {
+                const val = e.target.value
+                if (val && val < getToday()) {
+                  setFormData((prev) => ({ ...prev, eventDate: '' }))
+                  alert('Please select a date today or in the future.')
+                }
+              }}
+              min={getToday()}
+              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
             />
           </div>
           <div>
@@ -176,7 +192,7 @@ export default function BookingForm() {
               value={formData.budget}
               onChange={handleChange}
               placeholder="e.g., $500-$1000"
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
             />
           </div>
         </div>
@@ -190,7 +206,7 @@ export default function BookingForm() {
             value={formData.eventLocation}
             onChange={handleChange}
             placeholder="City, Country"
-            className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors"
           />
         </div>
 
@@ -203,14 +219,14 @@ export default function BookingForm() {
             onChange={handleChange}
             rows={4}
             placeholder="Tell us more about your project or event..."
-            className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant border border-transparent resize-y"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800/80 text-white rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary-vibrant focus:border-primary-vibrant/50 border border-slate-700/50 transition-colors resize-y"
           />
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-primary-vibrant text-white rounded-lg text-sm sm:text-base font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50"
+          className="w-full px-4 py-2 sm:px-6 sm:py-3 bg-primary-vibrant text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-blue-500 hover:shadow-lg hover:shadow-primary-vibrant/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? 'Submitting...' : 'Submit Booking Request'}
         </button>

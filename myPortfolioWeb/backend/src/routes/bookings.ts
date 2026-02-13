@@ -86,6 +86,26 @@ router.post('/', bookingLimiter, sanitizeInput, asyncHandler(async (req: Request
     return;
   }
 
+  if (sanitizedEventDate) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(sanitizedEventDate)) {
+      res.status(400).json({ error: 'Event date must be in YYYY-MM-DD format' });
+      return;
+    }
+    const eventDateObj = new Date(sanitizedEventDate);
+    if (isNaN(eventDateObj.getTime())) {
+      res.status(400).json({ error: 'Invalid event date' });
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDateObj.setHours(0, 0, 0, 0);
+    if (eventDateObj < today) {
+      res.status(400).json({ error: 'Event date cannot be in the past' });
+      return;
+    }
+  }
+
   const booking = new Booking({
     name: sanitizedName,
     email: sanitizedEmail,

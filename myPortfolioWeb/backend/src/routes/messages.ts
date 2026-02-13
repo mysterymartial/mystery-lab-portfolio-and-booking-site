@@ -34,7 +34,7 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
   
   const total = await Message.countDocuments({ deleted: false });
   
-  res.set('Cache-Control', 'private, max-age=60'); // Cache for 60 seconds
+  res.set('Cache-Control', 'no-store, must-revalidate'); // No cache - chat data must be fresh for real-time replies
   res.json({
     messages,
     pagination: {
@@ -73,8 +73,8 @@ router.post('/', messageLimiter, sanitizeInput, asyncHandler(async (req: Request
     return;
   }
 
-  if (sanitizedMessage.length < 10 || sanitizedMessage.length > 5000) {
-    res.status(400).json({ error: 'Message must be between 10 and 5000 characters' });
+  if (sanitizedMessage.length < 2 || sanitizedMessage.length > 5000) {
+    res.status(400).json({ error: 'Message must be between 2 and 5000 characters' });
     return;
   }
 

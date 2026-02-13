@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import ChatInterface from '@/components/ChatInterface'
+import ClientOnlyChat from '@/components/ClientOnlyChat'
 import BookingForm from '@/components/BookingForm'
 import BackToHome from '@/components/BackToHome'
 
@@ -23,10 +23,10 @@ export default function BookingPage() {
           <button
             type="button"
             onClick={() => setActiveTab('chat')}
-            className={`px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all ${
+            className={`px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl text-sm sm:text-base font-semibold transition-all ${
               activeTab === 'chat'
-                ? 'bg-primary-vibrant text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-primary-vibrant text-white shadow-lg shadow-primary-vibrant/25'
+                : 'bg-slate-800/80 text-gray-300 hover:bg-slate-700/80 border border-slate-700/50 hover:border-primary-vibrant/30'
             }`}
           >
             Chat
@@ -34,17 +34,17 @@ export default function BookingPage() {
           <button
             type="button"
             onClick={() => setActiveTab('booking')}
-            className={`px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all ${
+            className={`px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-xl text-sm sm:text-base font-semibold transition-all ${
               activeTab === 'booking'
-                ? 'bg-primary-vibrant text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-primary-vibrant text-white shadow-lg shadow-primary-vibrant/25'
+                : 'bg-slate-800/80 text-gray-300 hover:bg-slate-700/80 border border-slate-700/50 hover:border-primary-vibrant/30'
             }`}
           >
             Booking Form
           </button>
         </div>
 
-        {activeTab === 'chat' ? <ChatInterface /> : <BookingForm />}
+        {activeTab === 'chat' ? <ClientOnlyChat /> : <BookingForm />}
       </div>
     </div>
   )

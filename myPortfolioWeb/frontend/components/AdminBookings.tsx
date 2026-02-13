@@ -9,6 +9,7 @@ export default function AdminBookings() {
   const { user, getIdToken } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [actingId, setActingId] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -18,23 +19,27 @@ export default function AdminBookings() {
 
   const loadBookings = async () => {
     try {
+      setLoadError(false)
       const token = await getIdToken()
       const bookingsData = await api.getAllBookings(token)
       setBookings(bookingsData)
     } catch (error) {
       console.error('Error loading bookings:', error)
+      setLoadError(true)
     }
   }
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
       setActingId(id)
+      setBookings((prev) => prev.map((b) => (b._id === id ? { ...b, status } : b)))
       const token = await getIdToken()
       await api.updateBookingStatus(id, status, token)
       await loadBookings()
     } catch (error) {
       console.error('Error updating status:', error)
-      alert('Failed to update booking status')
+      alert(error instanceof Error ? error.message : 'Failed to update booking status')
+      await loadBookings()
     } finally {
       setActingId(null)
     }
@@ -44,12 +49,14 @@ export default function AdminBookings() {
     if (!confirm('Archive this booking? It will be hidden from the list.')) return
     try {
       setActingId(id)
+      setBookings((prev) => prev.filter((b) => b._id !== id))
       const token = await getIdToken()
       await api.softDeleteBooking(id, token)
       await loadBookings()
     } catch (error) {
       console.error('Error archiving booking:', error)
-      alert('Failed to archive booking')
+      alert(error instanceof Error ? error.message : 'Failed to archive booking')
+      await loadBookings()
     } finally {
       setActingId(null)
     }
@@ -59,7 +66,14 @@ export default function AdminBookings() {
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Booking Requests</h2>
       <div className="space-y-3 sm:space-y-4">
-        {bookings.length === 0 ? (
+        {loadError ? (
+          <p className="text-amber-400 text-sm sm:text-base">
+            Failed to load bookings.{' '}
+            <button type="button" onClick={loadBookings} className="underline hover:text-amber-300">
+              Retry
+            </button>
+          </p>
+        ) : bookings.length === 0 ? (
           <p className="text-gray-400 text-sm sm:text-base">No bookings</p>
         ) : (
           bookings.map((booking) => (

@@ -32,7 +32,7 @@ export default function AdminReviews() {
       loadReviews()
     } catch (error) {
       console.error('Error approving review:', error)
-      alert('Failed to approve review')
+      alert(error instanceof Error ? error.message : 'Failed to approve review')
     }
   }
 
@@ -44,7 +44,20 @@ export default function AdminReviews() {
         loadReviews()
       } catch (error) {
         console.error('Error rejecting review:', error)
-        alert('Failed to reject review')
+        alert(error instanceof Error ? error.message : 'Failed to reject review')
+      }
+    }
+  }
+
+  const handleDelete = async (reviewId: string) => {
+    if (confirm('Are you sure you want to delete this review? This cannot be undone.')) {
+      try {
+        const token = await getIdToken()
+        await api.deleteReview(reviewId, token)
+        loadReviews()
+      } catch (error) {
+        console.error('Error deleting review:', error)
+        alert(error instanceof Error ? error.message : 'Failed to delete review')
       }
     }
   }
@@ -80,26 +93,33 @@ export default function AdminReviews() {
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
                   {!review.approved && (
                     <>
                       <button
                         onClick={() => handleApprove(review._id)}
-                        className="px-2 py-1 sm:px-3 sm:py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs sm:text-sm"
+                        className="px-2 py-1 sm:px-3 sm:py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs sm:text-sm transition-colors"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(review._id)}
-                        className="px-2 py-1 sm:px-3 sm:py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs sm:text-sm"
+                        className="px-2 py-1 sm:px-3 sm:py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs sm:text-sm transition-colors"
                       >
                         Reject
                       </button>
                     </>
                   )}
                   {review.approved && (
-                    <span className="px-2 py-1 sm:px-3 sm:py-1 bg-green-600 text-white rounded text-xs sm:text-sm">Approved</span>
+                    <span className="px-2 py-1 sm:px-3 sm:py-1 bg-green-600 text-white rounded-lg text-xs sm:text-sm">Approved</span>
                   )}
+                  <button
+                    onClick={() => handleDelete(review._id)}
+                    className="px-2 py-1 sm:px-3 sm:py-1 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-xs sm:text-sm transition-colors border border-slate-600"
+                    title="Delete review"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
               <p className="text-gray-300 mt-2 text-sm sm:text-base break-words">{review.comment}</p>
