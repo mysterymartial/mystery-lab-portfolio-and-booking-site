@@ -11,11 +11,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": [
-    "portfolio",
-    "gig-booking",
-    "api"
-  ],
+  "keywords": ["portfolio", "gig-booking", "api"],
   "author": "Agbaosi Bolarinwa Minasu (Mystery)",
   "license": "ISC",
   "type": "commonjs",
@@ -24,17 +20,16 @@
     "@sentry/profiling-node": "^10.38.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
-    "dompurify": "^3.3.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "firebase-admin": "^13.0.2",
     "helmet": "^8.1.0",
-    "jsdom": "^27.0.1",
     "mongoose": "^8.8.4",
     "morgan": "^1.10.1",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^6.9.16",
+    "sanitize-html": "^7.2.0"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",
@@ -42,7 +37,6 @@
     "@types/express": "^4.17.21",
     "@types/express-rate-limit": "^5.0.0",
     "@types/jest": "^30.0.0",
-    "@types/jsdom": "^27.0.0",
     "@types/morgan": "^1.9.10",
     "@types/nodemailer": "^6.4.14",
     "@types/supertest": "^6.0.3",

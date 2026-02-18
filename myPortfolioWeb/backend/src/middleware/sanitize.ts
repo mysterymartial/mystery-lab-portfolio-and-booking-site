@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import createDOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-
-const window = new JSDOM('').window;
-const DOMPurify = createDOMPurify(window as any);
+import sanitizeHtml from 'sanitize-html';
 
 export interface SanitizedRequest extends Request {
   sanitizedBody?: any;
   body: any;
+}
+
+/** Strip HTML tags from a string to prevent XSS */
+function stripHtml(str: string): string {
+  return sanitizeHtml(str, { allowedTags: [], allowedAttributes: {} }).trim();
 }
 
 // Sanitize string inputs to prevent XSS
@@ -15,8 +16,7 @@ export const sanitizeInput = (req: SanitizedRequest, res: Response, next: NextFu
   if (req.body && typeof req.body === 'object') {
     const sanitizeObject = (obj: any): any => {
       if (typeof obj === 'string') {
-        // Remove HTML tags and sanitize
-        return DOMPurify.sanitize(obj, { ALLOWED_TAGS: [] });
+        return stripHtml(obj);
       } else if (Array.isArray(obj)) {
         return obj.map(sanitizeObject);
       } else if (obj && typeof obj === 'object') {
@@ -38,5 +38,5 @@ export const sanitizeInput = (req: SanitizedRequest, res: Response, next: NextFu
 // Sanitize specific fields
 export const sanitizeString = (str: string): string => {
   if (typeof str !== 'string') return str;
-  return DOMPurify.sanitize(str, { ALLOWED_TAGS: [] }).trim();
+  return stripHtml(str);
 };
