@@ -214,15 +214,27 @@ export const api = {
     budget?: string;
     additionalInfo?: string;
   }): Promise<Booking> => {
-    const response = await fetch(`${API_BASE_URL}/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new Error(await getErrorMessage(response, 'Failed to create booking'));
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    try {
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(await getErrorMessage(response, 'Failed to create booking'));
+      }
+      return response.json();
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error('Request timed out. Check your connection or try again.');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
-    return response.json();
   },
 
   updateBookingStatus: async (id: string, status: string, token: string): Promise<Booking> => {

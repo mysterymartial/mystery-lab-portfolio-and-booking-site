@@ -120,17 +120,17 @@ router.post('/', bookingLimiter, sanitizeInput, asyncHandler(async (req: Request
 
   await booking.save();
 
-    // Send email notification
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (adminEmail) {
-      await sendEmail(
-        adminEmail,
-        `New Booking Request from ${sanitizedName}`,
-        `New booking request:\n\nName: ${sanitizedName}\nEmail: ${sanitizedEmail}\nPhone: ${sanitizedPhone}\nService: ${sanitizedServiceType}\nDate: ${sanitizedEventDate || 'Not specified'}\nLocation: ${sanitizedEventLocation || 'Not specified'}\nBudget: ${sanitizedBudget || 'Not specified'}\n\nAdditional Info: ${sanitizedAdditionalInfo || 'None'}`
-      );
-    }
+  // Send email notification (fire-and-forget - don't block response)
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (adminEmail) {
+    sendEmail(
+      adminEmail,
+      `New Booking Request from ${sanitizedName}`,
+      `New booking request:\n\nName: ${sanitizedName}\nEmail: ${sanitizedEmail}\nPhone: ${sanitizedPhone}\nService: ${sanitizedServiceType}\nDate: ${sanitizedEventDate || 'Not specified'}\nLocation: ${sanitizedEventLocation || 'Not specified'}\nBudget: ${sanitizedBudget || 'Not specified'}\n\nAdditional Info: ${sanitizedAdditionalInfo || 'None'}`
+    ).catch((err) => console.error('Booking email notification failed:', err));
+  }
 
-    res.status(201).json({
+  res.status(201).json({
       _id: booking._id,
       name: booking.name,
       email: booking.email,
