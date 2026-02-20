@@ -1,3 +1,3 @@
-// Re-export from firebase.tsx
-export { auth, AuthProvider, useAuth } from './firebase'
-export { default } from './firebase'
+// Re-export from firebase-client (avoids circular import with firebase.ts)
+export { auth, AuthProvider, useAuth } from './firebase-client'
+export { default } from './firebase-client'
