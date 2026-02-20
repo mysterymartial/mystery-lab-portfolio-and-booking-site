@@ -39,11 +39,10 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Allow Vercel deployments (*.vercel.app)
-    if (origin.endsWith('.vercel.app')) return callback(null, true);
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
+    if (!origin || origin === 'null') return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, origin);
+    if (origin.endsWith('.vercel.app')) return callback(null, origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
