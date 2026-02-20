@@ -1,0 +1,236 @@
+📘 ALOBIN ARCHITECTURE DESIGN DOCUMENT (ADD)
+1️⃣ Business Context
+Core Business Model
+
+B2B bin owners onboard
+
+Web2 wallet generated for them
+
+They:
+
+Subscribe Monthly (₦8,000 example)
+
+Or One-Time (₦2,000 example)
+
+They trigger pickup:
+
+Via Web Portal
+
+Or via IoT Smart Bin
+
+Collector accepts
+
+Collector picks up
+
+Validator confirms drop
+
+Revenue split:
+
+One-Time: 20% Collector, 20% Validator
+
+Subscription: 2% per pickup each
+
+System must:
+
+Track state transitions
+
+Prevent fraud
+
+Handle revenue calculation
+
+Scale to IoT expansion
+
+2️⃣ Architectural Characteristics
+
+Derived from business needs.
+
+🔹 1. Scalability
+
+Must handle increasing bins
+
+Event-driven to avoid blocking
+
+Horizontal scaling ready (future Kubernetes)
+
+🔹 2. Reliability
+
+IoT devices unreliable
+
+Pickup lifecycle must not lose state
+
+Event durability required
+
+🔹 3. Auditability
+
+Financial distribution must be traceable
+
+State transitions must be logged
+
+Required for B2B trust
+
+🔹 4. Maintainability
+
+Clear domain boundaries
+
+Services separated by responsibility
+
+Modular Go packages
+
+🔹 5. Cost Efficiency
+
+Minimal microservices (3 only)
+
+Docker Compose initially
+
+MySQL instead of heavier stack
+
+🔹 6. Security
+
+Role-based access (Bin Owner, Collector, Validator)
+
+Wallet isolation
+
+Secure MQTT TLS
+
+🔹 7. Extensibility
+
+Web3 already exists
+
+Future IoT expansion
+
+Possible expansion into recycling marketplaces
+
+3️⃣ Architectural Style
+Primary Style:
+Event-Driven Microservices (Coarse-Grained)
+
+Why:
+
+Pickup lifecycle is asynchronous
+
+IoT is event-based
+
+Financial distribution triggered by validation
+
+Loose coupling needed
+
+Secondary Style:
+Layered Architecture inside each service
+
+Each service contains:
+
+API Layer
+
+Application Layer
+
+Domain Layer
+
+Infrastructure Layer
+
+Clean Architecture principles.
+
+4️⃣ High-Level Logical Architecture
+Services
+1️⃣ Business Service
+
+Bin Owner onboarding
+
+Wallet management (Web2)
+
+Subscription management
+
+Invoice & revenue distribution
+
+2️⃣ Operations Service
+
+Pickup lifecycle
+
+Collector management
+
+Validator confirmation
+
+Fraud checks
+
+3️⃣ IoT Service
+
+MQTT ingestion (HiveMQ)
+
+Telemetry processing
+
+Bin-trigger event publishing
+
+Infrastructure
+
+MySQL per service
+
+NATS event bus
+
+Redis cache
+
+HiveMQ for devices
+
+5️⃣ Architectural Decisions (ADR Summary)
+ADR-001: Use Event-Driven Architecture
+
+Decision: Use NATS as internal event bus.
+Reason: Decouple services and handle asynchronous workflows.
+Consequence: Requires event versioning discipline.
+
+ADR-002: Merge Collector + Validator into Operations Service
+
+Decision: Keep operational lifecycle in one service.
+Reason: Avoid over-fragmentation and cross-service state sync.
+Consequence: Service slightly larger but simpler to operate.
+
+ADR-003: Keep IoT Service Separate
+
+Decision: Isolate MQTT layer from core services.
+Reason: IoT protocol concerns differ from business logic.
+Consequence: Clear boundary between device world and domain world.
+
+ADR-004: MySQL per Service
+
+Decision: Each service owns its DB.
+Reason: Avoid shared schema coupling.
+Consequence: Cross-service joins prohibited.
+
+ADR-005: Revenue Calculation in Business Service
+
+Decision: Financial logic isolated from operations.
+Reason: Prevent mixing operational state with accounting logic.
+Consequence: Event-driven financial triggers.
+
+6️⃣ Logical Component Design
+Business Service Components
+
+UserOnboardingManager
+
+WalletManager
+
+SubscriptionManager
+
+InvoiceManager
+
+RevenueDistributor
+
+Operations Service Components
+
+PickupManager
+
+AssignmentEngine
+
+CollectorManager
+
+ValidatorManager
+
+FraudDetectionEngine
+
+IoT Service Components
+
+MQTTListener
+
+DeviceAuthenticator
+
+TelemetryProcessor
+
+BinTriggerPublisher
