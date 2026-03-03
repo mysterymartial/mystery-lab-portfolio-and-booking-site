@@ -75,7 +75,7 @@ export default function About() {
 
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6 sm:mt-8">
               <a
-                href="/cv.pdf"
+                href="/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf"
                 download="AGBAOSI_BOLARINWA_MINASU_MYSTERY_CV.pdf"
                 className="px-4 py-2 sm:px-6 sm:py-3 bg-primary-vibrant text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-blue-500 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
               >

@@ -2,7 +2,7 @@
 
 export default function Resume() {
   // CV path - exact working URL (lowercase .pdf required on Linux)
-  const cvPath = '/cv.pdf'
+  const cvPath = '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf'
 
   return (
     <section id="resume" className="py-16 sm:py-20 md:py-24 bg-[#0a0e27]">
