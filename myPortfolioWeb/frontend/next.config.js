@@ -15,11 +15,14 @@ const nextConfig = {
   generateEtags: true,
   async redirects() {
     return [
-      {
-        source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF',
-        destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf',
-        permanent: true,
-      },
+      { source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF', destination: '/cv.pdf', permanent: true },
+      { source: '/AGBAOSI BOLARINWA MINASU MYSTERY CV.PDF', destination: '/cv.pdf', permanent: true },
+    ];
+  },
+  async rewrites() {
+    return [
+      { source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF', destination: '/cv.pdf' },
+      { source: '/AGBAOSI BOLARINWA MINASU MYSTERY CV.PDF', destination: '/cv.pdf' },
     ];
   },
   async headers() {

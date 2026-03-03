@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   // Redirect uppercase .PDF to lowercase .pdf (fixes 404 on case-sensitive servers)
   if (pathname.endsWith('CV.PDF') || pathname.endsWith('cv.PDF')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf'
+    url.pathname = '/cv.pdf'
     return NextResponse.redirect(url, 308)
   }
 
