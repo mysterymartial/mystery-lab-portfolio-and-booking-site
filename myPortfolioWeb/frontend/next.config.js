@@ -20,11 +20,13 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    return [
-      { source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
-      { source: '/AGBAOSI BOLARINWA MINASU MYSTERY CV.PDF', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
-      { source: '/cv.pdf', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
-    ];
+    return {
+      beforeFiles: [
+        { source: '/cv.pdf', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
+        { source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
+        { source: '/AGBAOSI BOLARINWA MINASU MYSTERY CV.PDF', destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf' },
+      ],
+    };
   },
   async headers() {
     return [
