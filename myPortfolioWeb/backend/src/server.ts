@@ -32,17 +32,50 @@ app.use(securityHeaders);
 // Compression middleware
 app.use(compression());
 
-// CORS configuration
+// CORS configuration - all origins from env, no hardcoded domains
+function getWwwVariant(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.startsWith('www.')) {
+      u.hostname = u.hostname.slice(4);
+      return u.toString();
+    }
+    u.hostname = 'www.' + u.hostname;
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
+const prodUrl = process.env.PRODUCTION_URL;
+const prodWww = prodUrl ? getWwwVariant(prodUrl) : null;
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
-  process.env.PRODUCTION_URL,
+  prodUrl,
+  prodWww,
+  ...(process.env.CORS_ALLOWED_ORIGINS?.split(',').map((s) => s.trim()).filter(Boolean) || []),
 ].filter(Boolean);
+
+// Derive domain suffix from PRODUCTION_URL (e.g. https://www.mysterylab.it.com -> .mysterylab.it.com)
+function getDomainSuffixFromProdUrl(): string | null {
+  const url = process.env.PRODUCTION_URL;
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    return host ? '.' + host : null;
+  } catch {
+    return null;
+  }
+}
+
+const domainSuffix = process.env.CORS_ALLOWED_DOMAIN_SUFFIX || getDomainSuffixFromProdUrl();
 
 app.use(cors({
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
     if (!origin || origin === 'null') return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, origin);
     if (origin.endsWith('.vercel.app')) return callback(null, origin);
+    if (domainSuffix && origin.endsWith(domainSuffix)) return callback(null, origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
