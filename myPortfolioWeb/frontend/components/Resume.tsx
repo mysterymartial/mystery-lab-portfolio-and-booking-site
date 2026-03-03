@@ -1,7 +1,7 @@
 'use client'
 
 export default function Resume() {
-  // CV path - must match exact filename (lowercase .pdf) for Linux/Vercel case-sensitive serving
+  // CV path - exact working URL (lowercase .pdf required on Linux)
   const cvPath = '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf'
 
   return (
