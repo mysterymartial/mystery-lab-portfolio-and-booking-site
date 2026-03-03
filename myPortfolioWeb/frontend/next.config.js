@@ -13,6 +13,15 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  async redirects() {
+    return [
+      {
+        source: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF',
+        destination: '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
