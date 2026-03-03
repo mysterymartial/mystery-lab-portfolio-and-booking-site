@@ -3,5 +3,8 @@
   "redirects": [
     { "source": "/AGBAOSI BOLARINWA MINASU MYSTERY CV.PDF", "destination": "/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf", "permanent": true },
     { "source": "/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.PDF", "destination": "/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/cv.pdf", "destination": "/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf" }
   ]
 }
