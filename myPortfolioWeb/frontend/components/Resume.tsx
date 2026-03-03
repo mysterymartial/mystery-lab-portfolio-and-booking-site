@@ -1,8 +1,8 @@
 'use client'
 
 export default function Resume() {
-  // CV file path - exact filename in public folder (spaces URL-encoded for cross-platform)
-  const cvPath = encodeURI('/AGBAOSI BOLARINWA MINASU MYSTERY CV.pdf')
+  // CV file path - use cv.pdf (rename your PDF to cv.pdf in public folder for reliable serving)
+  const cvPath = '/cv.pdf'
 
   return (
     <section id="resume" className="py-16 sm:py-20 md:py-24 bg-[#0a0e27]">

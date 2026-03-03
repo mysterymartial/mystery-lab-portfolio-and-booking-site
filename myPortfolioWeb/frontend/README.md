@@ -31,7 +31,8 @@ frontend/
 ├── public/                # Static assets
 │   ├── logo.png          # Logo image (used in Header: 50x50px, Hero: 200x200px)
 │   ├── profile-bg.png    # Background image (used as Hero section background)
-│   └── AGBAOSI BOLARINWA MINASU MYSTERY CV.pdf  # CV/Resume PDF
+│   ├── cv.pdf  # CV/Resume PDF (served at /cv.pdf)
+│   └── AGBAOSI BOLARINWA MINASU MYSTERY CV.pdf  # Original (optional)
 ├── .env.example          # Environment variables template
 ├── package.json
 ├── next.config.js
