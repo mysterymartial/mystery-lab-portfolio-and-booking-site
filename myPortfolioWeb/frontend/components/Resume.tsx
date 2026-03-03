@@ -1,8 +1,8 @@
 'use client'
 
 export default function Resume() {
-  // CV file path - use cv.pdf (rename your PDF to cv.pdf in public folder for reliable serving)
-  const cvPath = '/cv.pdf'
+  // CV path - must match exact filename (lowercase .pdf) for Linux/Vercel case-sensitive serving
+  const cvPath = '/AGBAOSI%20BOLARINWA%20MINASU%20MYSTERY%20CV.pdf'
 
   return (
     <section id="resume" className="py-16 sm:py-20 md:py-24 bg-[#0a0e27]">
