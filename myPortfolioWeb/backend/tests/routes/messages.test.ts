@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import messageRoutes from '../../src/routes/messages';
 import Message from '../../src/models/Message';
 import { authenticateAdmin } from '../../src/middleware/auth';
+import { sendEmail } from '../../src/config/email';
 
 // Mock authentication middleware
 jest.mock('../../src/middleware/auth', () => ({
@@ -149,6 +150,32 @@ describe('Messages API - Boundary Analysis & Edge Cases', () => {
       expect(response.body.name).toBe(messageData.name);
       expect(response.body.email).toBe(messageData.email);
       expect(response.body.message).toBe(messageData.message);
+    });
+
+    it('should send email notification when ADMIN_EMAIL is set', async () => {
+      const prevAdminEmail = process.env.ADMIN_EMAIL;
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+
+      const messageData = {
+        name: 'Email Test User',
+        email: 'sender@example.com',
+        message: 'Test message for email notification',
+      };
+
+      await request(app).post('/api/messages').send(messageData);
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        'admin@example.com',
+        'New Message from Email Test User',
+        expect.stringContaining('Email Test User')
+      );
+      expect(sendEmail).toHaveBeenCalledWith(
+        'admin@example.com',
+        'New Message from Email Test User',
+        expect.stringContaining('sender@example.com')
+      );
+
+      process.env.ADMIN_EMAIL = prevAdminEmail;
     });
 
     // Boundary: Minimum required fields
@@ -454,6 +481,20 @@ describe('Messages API - Boundary Analysis & Edge Cases', () => {
       expect(response.status).toBe(200);
       expect(response.body.replies).toHaveLength(1);
       expect(response.body.replies[0].message).toBe(replyData.message);
+    });
+
+    it('should send email to original sender when reply is added', async () => {
+      const replyData = { message: 'Reply sent via email test' };
+      await request(app)
+        .post(`/api/messages/${testMessageId}/reply`)
+        .set('Authorization', 'Bearer valid-token')
+        .send(replyData);
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        'Reply to your message',
+        expect.stringContaining('Reply sent via email test')
+      );
     });
 
     // Boundary: Empty reply message

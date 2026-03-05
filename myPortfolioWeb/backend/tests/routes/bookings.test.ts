@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bookingRoutes from '../../src/routes/bookings';
 import Booking from '../../src/models/Booking';
+import { sendEmail } from '../../src/config/email';
 
 jest.mock('../../src/middleware/auth', () => ({
   authenticateAdmin: (req: any, res: any, next: any) => {
@@ -86,7 +87,7 @@ describe('Bookings API - Boundary Analysis & Edge Cases', () => {
         email: 'jane@example.com',
         phone: '08159089791',
         serviceType: 'mobile-app',
-        eventDate: '2024-12-25',
+        eventDate: '2026-12-25',
         eventLocation: 'Lagos, Nigeria',
         budget: '$1000-$2000',
         additionalInfo: 'Need iOS and Android versions',
@@ -101,6 +102,33 @@ describe('Bookings API - Boundary Analysis & Edge Cases', () => {
       expect(response.body.eventLocation).toBe(bookingData.eventLocation);
       expect(response.body.budget).toBe(bookingData.budget);
       expect(response.body.additionalInfo).toBe(bookingData.additionalInfo);
+    });
+
+    it('should send email notification when ADMIN_EMAIL is set', async () => {
+      const prevAdminEmail = process.env.ADMIN_EMAIL;
+      process.env.ADMIN_EMAIL = 'admin@example.com';
+
+      const bookingData = {
+        name: 'Booking Email Test',
+        email: 'booker@example.com',
+        phone: '08159089791',
+        serviceType: 'website',
+      };
+
+      await request(app).post('/api/bookings').send(bookingData);
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        'admin@example.com',
+        'New Booking Request from Booking Email Test',
+        expect.stringContaining('Booking Email Test')
+      );
+      expect(sendEmail).toHaveBeenCalledWith(
+        'admin@example.com',
+        'New Booking Request from Booking Email Test',
+        expect.stringContaining('booker@example.com')
+      );
+
+      process.env.ADMIN_EMAIL = prevAdminEmail;
     });
 
     // Boundary: Missing required fields
@@ -229,11 +257,26 @@ describe('Bookings API - Boundary Analysis & Edge Cases', () => {
       expect(response.status).toBe(201);
     });
 
-    // Edge: Invalid date formats
-    it('should accept various date formats', async () => {
-      const dateFormats = ['2024-12-25', '25/12/2024', 'Dec 25, 2024'];
-      
-      for (const date of dateFormats) {
+    // Edge: Date formats - only YYYY-MM-DD is accepted, and must not be in the past
+    it('should accept valid YYYY-MM-DD date in the future', async () => {
+      const futureDate = '2026-12-25';
+      const response = await request(app)
+        .post('/api/bookings')
+        .send({
+          name: 'Test User',
+          email: 'test@example.com',
+          phone: '08159089791',
+          serviceType: 'website',
+          eventDate: futureDate,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.eventDate).toBe(futureDate);
+    });
+
+    it('should reject invalid date formats', async () => {
+      const invalidDates = ['25/12/2024', 'Dec 25, 2024', 'invalid'];
+      for (const date of invalidDates) {
         const response = await request(app)
           .post('/api/bookings')
           .send({
@@ -243,8 +286,7 @@ describe('Bookings API - Boundary Analysis & Edge Cases', () => {
             serviceType: 'website',
             eventDate: date,
           });
-
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(400);
       }
     });
 
@@ -351,15 +393,14 @@ describe('Bookings API - Boundary Analysis & Edge Cases', () => {
       }
     });
 
-    it('should handle empty status', async () => {
+    it('should reject empty status', async () => {
       const response = await request(app)
         .put(`/api/bookings/${bookingId}/status`)
         .set('Authorization', 'Bearer valid-token')
         .send({ status: '' });
 
-      // Route doesn't validate status, so it accepts empty string
-      expect(response.status).toBe(200);
-      expect(response.body.status).toBe('');
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
     });
   });
 });

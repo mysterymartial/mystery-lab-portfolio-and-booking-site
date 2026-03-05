@@ -451,6 +451,23 @@ const createMockModel = (collectionName: 'messages' | 'reviews' | 'bookings') =>
       return Promise.resolve(updated);
     }),
     
+    findOneAndUpdate: jest.fn((query: any, update: any, options: any = {}) => {
+      const collection = getCollection();
+      const id = query._id;
+      if (!id) return Promise.resolve(null);
+      const searchId = id.toString().trim();
+      const index = collection.findIndex((doc: any) => {
+        const docId = doc._id ? doc._id.toString().trim() : '';
+        if (docId !== searchId) return false;
+        if (query.deleted && query.deleted.$ne === true && doc.deleted === true) return false;
+        return true;
+      });
+      if (index === -1) return Promise.resolve(null);
+      const updated = { ...collection[index], ...update, updatedAt: new Date() };
+      if (options.new !== false) collection[index] = updated;
+      return Promise.resolve(updated);
+    }),
+    
     create: jest.fn((data: any) => {
       // Spread data first, then set defaults only for missing fields
       const newDoc: any = {
