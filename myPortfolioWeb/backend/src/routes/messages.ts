@@ -85,14 +85,14 @@ router.post('/', messageLimiter, sanitizeInput, asyncHandler(async (req: Request
   });
   await newMessage.save();
 
-    // Send email notification
+    // Send email notification (fire-and-forget - don't block response)
     const adminEmail = process.env.ADMIN_EMAIL;
     if (adminEmail) {
-      await sendEmail(
+      sendEmail(
         adminEmail,
         `New Message from ${name}`,
         `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
-      );
+      ).catch((err) => console.error('Message email notification failed:', err));
     }
 
     res.status(201).json({
